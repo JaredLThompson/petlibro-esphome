@@ -386,6 +386,9 @@ sensor:
     state_class: measurement
     unit_of_measurement: '%'
     accuracy_decimals: 1
+    web_server:
+      sorting_group_id: group_water
+      sorting_weight: 10
     lambda: |-
         if(id(water_level).state >= id(max_water_level).state) {
           //this will account for overfills and just keep it at %100
@@ -423,6 +426,9 @@ sensor:
     state_class: measurement
     unit_of_measurement: 'mL'
     accuracy_decimals: 0
+    web_server:
+      sorting_group_id: group_water
+      sorting_weight: 20
     lambda: |-
         if(id(water_level).state <= id(min_water_level).state) {
           return 0; // account for when the water is below min. There will technically be SOME water in there
@@ -462,6 +468,9 @@ sensor:
     state_class: measurement
     unit_of_measurement: 'mL'
     accuracy_decimals: 0
+    web_server:
+      sorting_group_id: group_water
+      sorting_weight: 30
     lambda: |-
           return id(drinking_event_amount) / id(water_ml_conv).state;
 
@@ -535,6 +544,9 @@ sensor:
     state_class: measurement
     unit_of_measurement: 'mL'
     accuracy_decimals: 0
+    web_server:
+      sorting_group_id: group_water
+      sorting_weight: 40
     lambda: |-
           return id(drinking_roll) / id(water_ml_conv).state;
 
@@ -551,6 +563,9 @@ switch:
       number: GPIO3
       mode: OUTPUT
     restore_mode: ALWAYS_ON
+    web_server:
+      sorting_group_id: group_fountain
+      sorting_weight: 10
 
 # Switch to either use or not use the front button to reset the filter life
   - platform: template
@@ -580,6 +595,9 @@ switch:
     id: pump_interval
     restore_mode: RESTORE_DEFAULT_OFF
     optimistic: True
+    web_server:
+      sorting_group_id: group_fountain
+      sorting_weight: 20
     turn_off_action: 
       then:
         - lambda: |-
@@ -698,6 +716,9 @@ binary_sensor:
   - platform: template
     name: "Empty"
     icon: "mdi:water-alert-outline"
+    web_server:
+      sorting_group_id: group_status
+      sorting_weight: 10
     lambda: |-
       return id(errors).state >= 10;
     on_state:
@@ -714,6 +735,9 @@ binary_sensor:
     id: filter_exp
     name: "Filter Expired"
     icon: "mdi:filter-remove"
+    web_server:
+      sorting_group_id: group_status
+      sorting_weight: 30
     lambda: |-
           return ((id(sntp_time).now().year * 10000) + (id(sntp_time).now().month * 100) + (id(sntp_time).now().day_of_month)) - ((id(filter_exp_date).year * 10000) + (id(filter_exp_date).month * 100) + (id(filter_exp_date).day)) >= 0;
     on_state: 
@@ -730,6 +754,9 @@ binary_sensor:
   - platform: template
     name: "Tank Removed"
     icon: "mdi:watering-can-outline"
+    web_server:
+      sorting_group_id: group_status
+      sorting_weight: 20
     lambda: |-
       return id(water_level).state < id(min_water_level).state - 150000;
     
@@ -738,7 +765,7 @@ binary_sensor:
 time:
   - platform: sntp
     id: sntp_time
-    timezone: America/Chicago
+    timezone: America/Phoenix
     on_time:
       - seconds: 0
         minutes: 0
@@ -803,6 +830,9 @@ button:
     name: Filter Changed
     id: filter_changed_button
     icon: "mdi:file-swap"
+    web_server:
+      sorting_group_id: group_maintenance
+      sorting_weight: 10
     on_press:
     - datetime.date.set:
         id: filter_install_date
@@ -829,7 +859,7 @@ button:
         id: drinking_tmp
         value: '0'
     - lambda: |-
-        for (uint8_t i = 0;i< 25; i++) {
+        for (uint8_t i = 0; i< 24; i++) {
                     id(drinking_roll_24)[i] = 0;
         }
 
@@ -839,10 +869,41 @@ button:
     entity_category: config
     id: calibrate
     icon: "mdi:scale-unbalanced"
+    web_server:
+      sorting_group_id: group_maintenance
+      sorting_weight: 20
     on_press:
     - lambda: |-
         id(button_mode).make_call().set_value(0).perform();
         
+web_server:
+  port: 80
+  version: 3
+  local: true
+  log: false
+  ota: false
+
+  auth:
+    type: digest
+    username: !secret web_username
+    password: !secret web_password
+
+  sorting_groups:
+    - id: group_fountain
+      name: "Fountain"
+      sorting_weight: 10
+
+    - id: group_water
+      name: "Water"
+      sorting_weight: 20
+
+    - id: group_status
+      name: "Status"
+      sorting_weight: 30
+
+    - id: group_maintenance
+      name: "Maintenance"
+      sorting_weight: 40
 
 script:
   - id: set_filter_exp
