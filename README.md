@@ -21,6 +21,26 @@ You are, of course, free to change the name of the output file as desired.
 - The `--before=default-reset` and `--no-stub` flags may not be required, but do seem to make the process more reliable.
 - If the read fails, try power cycling the device. In testing, it sometimes would fail to read the file part of the way through unless the device had been cleanly restarted immediately before the dump was initiated.
 
+# secrets.yaml
+
+Both device firmwares use ESPHome's `!secret` system to keep credentials out of version control. Create a `secrets.yaml` file in the repository root:
+
+```yaml
+# WiFi credentials (required for both devices)
+wifi_ssid: "YOUR_WIFI_NAME"
+wifi_password: "YOUR_WIFI_PASSWORD"
+
+# Web server auth (PLWF105 only)
+web_username: "admin"
+web_password: "A_LONG_UNIQUE_PASSWORD"
+
+# Optional - uncomment in device yaml to use
+encryption_key: ""
+ota_password: ""
+```
+
+This file is already in `.gitignore` and should never be committed.
+
 # Dockstream Smart Fountain (PLWF105)
 
 An esphome firmware for PLWF105 automatic water bowl (also called the Dockstream Smart Fountain or the PETLIBRO App Monitoring Cat Water Fountain with Wireless Pump) by Petlibro. 
