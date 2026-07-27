@@ -168,6 +168,27 @@ The default ESPHome API port is `6053`.
 
 The YAML file does not need to be copied into Home Assistant for integration. Copying it into Home Assistant's ESPHome Device Builder is optional and only needed if builds will be managed there.
 
+### Drinking Events
+
+Each accepted drinking measurement triggers the `Drink Event` event entity with
+event type `drink`. Unlike the retained `Last Drink Amount` sensors, this
+creates a distinct Home Assistant event even when consecutive drinks have the
+same measured volume.
+
+To show these in a dashboard Activity card, use the event entity's exact ID
+from **Developer tools → States**:
+
+```yaml
+type: logbook
+title: Recent drink activity
+target:
+  entity_id:
+    - event.petlibro_plwf105_drink_event
+hours_to_show: 48
+```
+
+ESPHome event entities require Home Assistant Core 2024.5 or newer.
+
 ## Calibration
 
 This firmware uses a minimum/maximum water-range calibration. It is different from PETLIBRO's original base/tank tare routine.

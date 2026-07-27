@@ -17,7 +17,7 @@ esphome:
     board_build.f_flash: 40000000L
   project:
     name: petlibro.plwf105
-    version: "1.2.4"
+    version: "1.2.5"
   on_boot:
     priority: 200
     then:
@@ -398,6 +398,7 @@ sensor:
 
             id(drinking_event_amount) = id(drinking_event_before) - x;
             id(drinking_tmp)= id(drinking_tmp) + id(drinking_event_amount); //the _tmp is used to hold all events over an hour, used for a rolling 24hour cumiliatve water
+            id(drink_event).trigger("drink");
             id(drinking_event_before) = 0;
           } else {
 
@@ -752,6 +753,14 @@ text_sensor:
       name: SSID
     bssid:
       name: BSSID
+
+event:
+  - platform: template
+    name: "Drink Event"
+    id: drink_event
+    icon: "mdi:cup-water"
+    event_types:
+      - drink
 
 
 binary_sensor:
